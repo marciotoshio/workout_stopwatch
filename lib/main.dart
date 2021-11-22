@@ -1,18 +1,28 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:vibration/vibration.dart';
+import 'app_settings.dart';
+import 'timer.dart';
 
-void main() {
+Future main() async {
+  await Settings.init(cacheProvider: SharePreferenceCache());
+
   runApp(const WorkoutTimer());
 }
 
 class WorkoutTimer extends StatelessWidget {
   const WorkoutTimer({Key? key}) : super(key: key);
 
+  static const appTitle = 'Workout Stopwatch';
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Workout Stopwatch',
+      title: appTitle,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -25,47 +35,13 @@ class WorkoutTimer extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(
-        title: 'Workout Stopwatch',
-        times: {'GetReady': 3, 'Workout': 5, 'Rest': 2}
-      ),
+      home: const StopWatchPage(title: appTitle),
     );
   }
 }
 
-class Timer extends StatelessWidget {
-  final StopWatchTimer timer;
-  final int time;
-  final MaterialColor color;
-
-  Timer({Key? key, required this.timer, required this.time, required this.color}) : super(key: key) {
-    timer.setPresetSecondTime(time);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: time,
-      child: Container(
-        color: color,
-        child: Center(
-          child: StreamBuilder<int>(
-            stream: timer.rawTime,
-            initialData: 0,
-            builder: (context, snapshot) {
-              final value = snapshot.data;
-              final displayTime = StopWatchTimer.getDisplayTime(value!, milliSecond: false, hours: false);
-              return Text(displayTime, style: Theme.of(context).textTheme.headline4);
-            }
-          )
-        ),
-      ),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title, required this.times}) : super(key: key);
+class StopWatchPage extends StatefulWidget {
+  const StopWatchPage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -77,20 +53,27 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-  final Map<String, int> times;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<StopWatchPage> createState() => _StopWatchPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _StopWatchPageState extends State<StopWatchPage> {
   late StopWatchTimer getReadyTimer;
   late StopWatchTimer  workoutTimer;
   late StopWatchTimer  restTimer;
 
+  int getReadyTime = 5;
+  int workoutTime = 30;
+  int restTime = 10;
+
+  bool playNotificationSound = false;
+
   @override
   void initState() {
     super.initState();
+
+    getSettings();
 
     getReadyTimer = StopWatchTimer(
       mode: StopWatchMode.countDown,
@@ -104,6 +87,17 @@ class _MyHomePageState extends State<MyHomePage> {
       mode: StopWatchMode.countDown,
       onEnded: handleRestEnded,
     );
+  }
+
+  void refresh() {
+    setState(getSettings);
+  }
+
+  void getSettings() {
+    getReadyTime = Settings.getValue<double>(AppSettings.keyGetReadyTime, 5).toInt();
+    workoutTime = Settings.getValue<double>(AppSettings.keyWorkoutTime, 30).toInt();
+    restTime = Settings.getValue<double>(AppSettings.keyRestTime, 10).toInt();
+    playNotificationSound = Settings.getValue<bool>(AppSettings.keyNotificationSound, true);
   }
 
   @override
@@ -132,17 +126,17 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Timer(
             timer: getReadyTimer,
-            time: widget.times['GetReady'] ?? 0,
+            time: getReadyTime,
             color: Colors.lightBlue,
           ),
           Timer(
             timer: workoutTimer,
-            time: widget.times['Workout'] ?? 0,
+            time: workoutTime,
             color: Colors.blue,
           ),
           Timer(
             timer: restTimer,
-            time: widget.times['Rest'] ?? 0,
+            time: restTime,
             color: Colors.blueGrey,
           ),
         ],
@@ -152,20 +146,45 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Start',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      drawer: Drawer(
+        child: AppSettings(onSettingsUpdate: refresh),
+      ),
     );
   }
 
   void handleGetReadyEnded() {
     workoutTimer.onExecute.add(StopWatchExecute.start);
+    Vibration.vibrate();
+    playNotification();
   }
 
   void handleWorkoutEnded() {
     restTimer.onExecute.add(StopWatchExecute.start);
+    Vibration.vibrate();
+    playNotification();
   }
 
   void handleRestEnded() {
     getReadyTimer.onExecute.add(StopWatchExecute.reset);
     workoutTimer.onExecute.add(StopWatchExecute.reset);
     restTimer.onExecute.add(StopWatchExecute.reset);
+    Vibration.vibrate(pattern: [500, 500, 500, 500]);
+    playNotification();
+    showSnackBar();
+  }
+
+  void playNotification() {
+    if (playNotificationSound) {
+      FlutterRingtonePlayer.playNotification();
+    }
+  }
+
+  void showSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("Well done!", style: TextStyle(color: Colors.white, fontSize: 24), textAlign: TextAlign.center),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+    );
   }
 }
