@@ -94,9 +94,9 @@ class _StopWatchPageState extends State<StopWatchPage> {
   }
 
   void getSettings() {
-    getReadyTime = Settings.getValue<double>(AppSettings.keyGetReadyTime, 5).toInt();
-    workoutTime = Settings.getValue<double>(AppSettings.keyWorkoutTime, 30).toInt();
-    restTime = Settings.getValue<double>(AppSettings.keyRestTime, 10).toInt();
+    getReadyTime = int.parse(Settings.getValue<String>(AppSettings.keyGetReadyTime, "5"));
+    workoutTime = int.parse(Settings.getValue<String>(AppSettings.keyWorkoutTime, "30"));
+    restTime = int.parse(Settings.getValue<String>(AppSettings.keyRestTime, "10"));
     playNotificationSound = Settings.getValue<bool>(AppSettings.keyNotificationSound, true);
   }
 

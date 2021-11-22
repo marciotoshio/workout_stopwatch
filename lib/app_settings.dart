@@ -21,46 +21,34 @@ class AppSettings extends StatelessWidget {
           decoration: BoxDecoration(color: Colors.blue),
           child: Text('Settings'),
         ),
-        SliderSettingsTile(
+        TextInputSettingsTile(
           title: 'Get ready time',
           settingKey: keyGetReadyTime,
-          defaultValue: 5,
-          min: 0,
-          max: 30,
-          step: 1,
-          leading: const Icon(Icons.all_inclusive),
+          initialValue: "5",
           onChange: (value) {
             onSettingsUpdate();
             debugPrint('$keyGetReadyTime: $value');
           },
         ),
-        SliderSettingsTile(
+        TextInputSettingsTile(
           title: 'Workout time',
           settingKey: keyWorkoutTime,
-          defaultValue: 30,
-          min: 0,
-          max: 180,
-          step: 1,
-          leading: const Icon(Icons.all_inclusive),
+          initialValue: "30",
           onChange: (value) {
             onSettingsUpdate();
             debugPrint('$keyWorkoutTime: $value');
           },
         ),
-        SliderSettingsTile(
+        TextInputSettingsTile(
           title: 'Rest time',
           settingKey: keyRestTime,
-          defaultValue: 10,
-          min: 0,
-          max: 120,
-          step: 1,
-          leading: const Icon(Icons.all_inclusive),
+          initialValue: "10",
           onChange: (value) {
             onSettingsUpdate();
             debugPrint('$keyRestTime: $value');
           },
         ),
-        CheckboxSettingsTile(
+        SwitchSettingsTile(
           leading: const Icon(Icons.notifications),
           settingKey: keyNotificationSound,
           title: 'Notification sound',
