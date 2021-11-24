@@ -59,9 +59,9 @@ class StopWatchPage extends StatefulWidget {
 }
 
 class _StopWatchPageState extends State<StopWatchPage> {
-  late Timer getReadyTimer;
-  late Timer workoutTimer;
-  late Timer restTimer;
+  GlobalKey getReadyTimerKey = GlobalKey();
+  GlobalKey workoutTimerKey = GlobalKey();
+  GlobalKey restTimerKey = GlobalKey();
 
   int getReadyTime = 5;
   int workoutTime = 30;
@@ -74,31 +74,6 @@ class _StopWatchPageState extends State<StopWatchPage> {
     super.initState();
 
     getSettings();
-
-    getReadyTimer = Timer(
-      timer: StopWatchTimer(
-        mode: StopWatchMode.countDown,
-        onEnded: handleGetReadyEnded,
-      ),
-      time: getReadyTime,
-      color: Colors.lightBlue,
-    );
-    workoutTimer = Timer(
-      timer: StopWatchTimer(
-        mode: StopWatchMode.countDown,
-        onEnded: handleWorkoutEnded,
-      ),
-      time: workoutTime,
-      color: Colors.blue,
-    );
-    restTimer = Timer(
-      timer: StopWatchTimer(
-        mode: StopWatchMode.countDown,
-        onEnded: handleRestEnded,
-      ),
-      time: restTime,
-      color: Colors.blueGrey,
-    );
   }
 
   void refresh() {
@@ -113,21 +88,7 @@ class _StopWatchPageState extends State<StopWatchPage> {
   }
 
   @override
-  void dispose() async {
-    super.dispose();
-    getReadyTimer.dispose();  // Need to call dispose function.
-    workoutTimer.dispose();
-    restTimer.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -136,15 +97,39 @@ class _StopWatchPageState extends State<StopWatchPage> {
       ),
       body: Column(
         children: <Widget>[
-          getReadyTimer,
-          workoutTimer,
-          restTimer,
+          Timer(
+            key: getReadyTimerKey,
+            timer: StopWatchTimer(
+              mode: StopWatchMode.countDown,
+              onEnded: handleGetReadyEnded,
+            ),
+            time: getReadyTime,
+            color: Colors.lightBlue,
+          ),
+          Timer(
+            key: workoutTimerKey,
+            timer: StopWatchTimer(
+              mode: StopWatchMode.countDown,
+              onEnded: handleWorkoutEnded,
+            ),
+            time: workoutTime,
+            color: Colors.blue,
+          ),
+          Timer(
+            key: restTimerKey,
+            timer: StopWatchTimer(
+              mode: StopWatchMode.countDown,
+              onEnded: handleRestEnded,
+            ),
+            time: restTime,
+            color: Colors.blueGrey,
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          getReadyTimer.start();
-          refresh();
+          var getReadyTimerWidget = getReadyTimerKey.currentWidget as Timer;
+          getReadyTimerWidget.start();
         },
         tooltip: 'Start',
         child: const Icon(Icons.add),
@@ -156,21 +141,29 @@ class _StopWatchPageState extends State<StopWatchPage> {
   }
 
   void handleGetReadyEnded() {
-    workoutTimer.start();
+    var workoutTimerWidget = workoutTimerKey.currentWidget as Timer;
+    workoutTimerWidget.start();
     Vibration.vibrate();
     playNotification();
   }
 
   void handleWorkoutEnded() {
-    restTimer.start();
+    var restTimerWidget = restTimerKey.currentWidget as Timer;
+    restTimerWidget.start();
     Vibration.vibrate();
     playNotification();
   }
 
   void handleRestEnded() {
-    getReadyTimer.reset();
-    workoutTimer.reset();
-    restTimer.reset();
+    var getReadyTimerWidget = getReadyTimerKey.currentWidget as Timer;
+    getReadyTimerWidget.reset();
+
+    var workoutTimerWidget = workoutTimerKey.currentWidget as Timer;
+    workoutTimerWidget.reset();
+
+    var restTimerWidget = restTimerKey.currentWidget as Timer;
+    restTimerWidget.reset();
+
     Vibration.vibrate(pattern: [500, 500, 500, 500]);
     playNotification();
     showSnackBar();
