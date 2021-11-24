@@ -59,9 +59,9 @@ class StopWatchPage extends StatefulWidget {
 }
 
 class _StopWatchPageState extends State<StopWatchPage> {
-  late StopWatchTimer getReadyTimer;
-  late StopWatchTimer  workoutTimer;
-  late StopWatchTimer  restTimer;
+  late Timer getReadyTimer;
+  late Timer workoutTimer;
+  late Timer restTimer;
 
   int getReadyTime = 5;
   int workoutTime = 30;
@@ -75,17 +75,29 @@ class _StopWatchPageState extends State<StopWatchPage> {
 
     getSettings();
 
-    getReadyTimer = StopWatchTimer(
-      mode: StopWatchMode.countDown,
-      onEnded: handleGetReadyEnded,
+    getReadyTimer = Timer(
+      timer: StopWatchTimer(
+        mode: StopWatchMode.countDown,
+        onEnded: handleGetReadyEnded,
+      ),
+      time: getReadyTime,
+      color: Colors.lightBlue,
     );
-    workoutTimer = StopWatchTimer(
-      mode: StopWatchMode.countDown,
-      onEnded: handleWorkoutEnded,
+    workoutTimer = Timer(
+      timer: StopWatchTimer(
+        mode: StopWatchMode.countDown,
+        onEnded: handleWorkoutEnded,
+      ),
+      time: workoutTime,
+      color: Colors.blue,
     );
-    restTimer = StopWatchTimer(
-      mode: StopWatchMode.countDown,
-      onEnded: handleRestEnded,
+    restTimer = Timer(
+      timer: StopWatchTimer(
+        mode: StopWatchMode.countDown,
+        onEnded: handleRestEnded,
+      ),
+      time: restTime,
+      color: Colors.blueGrey,
     );
   }
 
@@ -103,9 +115,9 @@ class _StopWatchPageState extends State<StopWatchPage> {
   @override
   void dispose() async {
     super.dispose();
-    await getReadyTimer.dispose();  // Need to call dispose function.
-    await workoutTimer.dispose();
-    await restTimer.dispose();
+    getReadyTimer.dispose();  // Need to call dispose function.
+    workoutTimer.dispose();
+    restTimer.dispose();
   }
 
   @override
@@ -124,25 +136,16 @@ class _StopWatchPageState extends State<StopWatchPage> {
       ),
       body: Column(
         children: <Widget>[
-          Timer(
-            timer: getReadyTimer,
-            time: getReadyTime,
-            color: Colors.lightBlue,
-          ),
-          Timer(
-            timer: workoutTimer,
-            time: workoutTime,
-            color: Colors.blue,
-          ),
-          Timer(
-            timer: restTimer,
-            time: restTime,
-            color: Colors.blueGrey,
-          ),
+          getReadyTimer,
+          workoutTimer,
+          restTimer,
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () { getReadyTimer.onExecute.add(StopWatchExecute.start); },
+        onPressed: () {
+          getReadyTimer.start();
+          refresh();
+        },
         tooltip: 'Start',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -153,21 +156,21 @@ class _StopWatchPageState extends State<StopWatchPage> {
   }
 
   void handleGetReadyEnded() {
-    workoutTimer.onExecute.add(StopWatchExecute.start);
+    workoutTimer.start();
     Vibration.vibrate();
     playNotification();
   }
 
   void handleWorkoutEnded() {
-    restTimer.onExecute.add(StopWatchExecute.start);
+    restTimer.start();
     Vibration.vibrate();
     playNotification();
   }
 
   void handleRestEnded() {
-    getReadyTimer.onExecute.add(StopWatchExecute.reset);
-    workoutTimer.onExecute.add(StopWatchExecute.reset);
-    restTimer.onExecute.add(StopWatchExecute.reset);
+    getReadyTimer.reset();
+    workoutTimer.reset();
+    restTimer.reset();
     Vibration.vibrate(pattern: [500, 500, 500, 500]);
     playNotification();
     showSnackBar();
