@@ -7,13 +7,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_stopwatch/models/workout.dart';
+import 'package:workout_stopwatch/widgets/workout_screen.dart';
 
-import 'package:workout_stopwatch/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const WorkoutTimer());
+    await tester.pumpWidget(WorkoutScreen(workout: Workout(1, 'test', 1, 1, 1)));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

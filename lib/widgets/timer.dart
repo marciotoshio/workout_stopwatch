@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 
-import 'animation_reset_notification.dart';
-import 'animation_start_notification.dart';
+import '../notifications.dart';
 
 class Timer extends StatefulWidget {
   final StopWatchTimer timer;
@@ -33,7 +32,7 @@ class Timer extends StatefulWidget {
     timer.onExecute.add(StopWatchExecute.reset);
     var context = containerKey.currentContext;
     if (context != null) {
-      AnimationResetNotification().dispatch(context);
+      const AnimationResetNotification().dispatch(context);
     }
   }
 

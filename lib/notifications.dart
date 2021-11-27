@@ -5,3 +5,7 @@ class AnimationStartNotification extends Notification {
 
   const AnimationStartNotification({required this.containerHeight});
 }
+
+class AnimationResetNotification extends Notification {
+  const AnimationResetNotification();
+}
