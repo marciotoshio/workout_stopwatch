@@ -47,7 +47,7 @@ class _WorkoutCreatePageState extends State<WorkoutCreatePage> {
   void saveWorkout() {
     if (_formKey.currentState!.validate()) {
       var workout = Workout(
-          0,
+          null,
           workoutNameController.text,
           int.parse(getReadyTimeController.text),
           int.parse(workoutTimeController.text),

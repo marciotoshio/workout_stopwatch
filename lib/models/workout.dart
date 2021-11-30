@@ -1,5 +1,5 @@
 class Workout {
-  final int id;
+  final int? id;
   final String name;
   final int getReadyTime;
   final int workoutTime;
